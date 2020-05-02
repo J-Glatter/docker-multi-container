@@ -1,0 +1,18 @@
+language: generic
+sudo: required
+services:
+  - docker
+before_install:
+  - docker build -t jglatter/react-test -f ./client/Dockerfile.dev ./client
+script:
+  - docker run -e CI=true jglatter/react-test yarn test
+after_success:
+  - docker build -t jglatter/multi-client ./client
+  - docker build -t jglatter/multi-worker ./worker
+  - docker build -t jglatter/multi-nginx ./nginx
+  - docker build -t jglatter/multi-api ./api
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push jglatter/multi-client
+  - docker push jglatter/multi-worker
+  - docker push jglatter/multi-nginx
+  - docker push jglatter/multi-api
